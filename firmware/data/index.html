@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laser Detector</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #08080e;
+      --panel:   #10101a;
+      --border:  #1a1a2e;
+      --text:    #c0caf5;
+      --dim:     #4a5080;
+      --green:   #9ece6a;
+      --red:     #f7768e;
+      --orange:  #ff9e64;
+      --cyan:    #7dcfff;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 12px;
+      gap: 12px;
+    }
+
+    header {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { font-size: 1rem; font-weight: bold; letter-spacing: 3px; color: var(--cyan); }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.72rem;
+      color: var(--dim);
+    }
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--dim);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .dot.live { background: var(--green); box-shadow: 0 0 7px var(--green); }
+
+    .alert-box {
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: border-color .2s, box-shadow .2s;
+      min-height: 140px;
+    }
+    .alert-box.alerting {
+      border-color: var(--red);
+      animation: glow 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from { box-shadow: 0 0 10px rgba(247,118,142,.25); }
+      to   { box-shadow: 0 0 35px rgba(247,118,142,.6);  }
+    }
+
+    .big-label {
+      font-size: 4.5rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: var(--dim);
+      min-width: 110px;
+      transition: color .2s, text-shadow .2s;
+      line-height: 1;
+    }
+    .big-label.active {
+      color: var(--red);
+      text-shadow: 0 0 28px var(--red);
+    }
+
+    .centre {
+      flex: 1;
+      text-align: center;
+    }
+    .direction-text {
+      font-size: 1.8rem;
+      font-weight: bold;
+      letter-spacing: 4px;
+      color: var(--dim);
+      transition: color .2s;
+    }
+    .direction-text.active { color: var(--orange); }
+
+    .compass {
+      display: grid;
+      grid-template-areas:
+        ". top ."
+        "lft ctr rgt"
+        ". bot .";
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+      margin-top: 10px;
+      width: 120px;
+      margin: 10px auto 0;
+    }
+    .compass-pt {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: var(--border);
+      text-align: center;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      transition: color .2s, border-color .2s, box-shadow .2s;
+    }
+    .compass-pt.lit {
+      color: var(--red);
+      border-color: var(--red);
+      box-shadow: 0 0 8px var(--red);
+    }
+    .compass-pt.front { grid-area: top; }
+    .compass-pt.rear  { grid-area: bot; }
+    .compass-pt.left  { grid-area: lft; }
+    .compass-pt.right { grid-area: rgt; }
+    .compass-pt.centre{ grid-area: ctr; font-size: 0.6rem; }
+
+    .speed-block { text-align: right; }
+    .speed-num {
+      font-size: 3.2rem;
+      font-weight: bold;
+      color: var(--green);
+      line-height: 1;
+    }
+    .speed-unit { font-size: 0.72rem; color: var(--dim); margin-top: 3px; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .stat-label { font-size: 0.65rem; color: var(--dim); letter-spacing: 2px; margin-bottom: 6px; }
+    .stat-value { font-size: 1.6rem; font-weight: bold; color: var(--text); }
+    .stat-unit  { font-size: 0.65rem; color: var(--dim); margin-left: 4px; }
+
+    .log-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+    .log-heading { font-size: 0.7rem; color: var(--dim); letter-spacing: 2px; margin-bottom: 8px; }
+    .log-list { list-style: none; max-height: 110px; overflow-y: auto; }
+    .log-list li {
+      display: flex;
+      gap: 10px;
+      padding: 3px 0;
+      font-size: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .log-list li:last-child { border: none; }
+    .lt { color: var(--dim); min-width: 68px; }
+    .ls { color: var(--red); font-weight: bold; min-width: 50px; }
+    .li { color: var(--text); }
+
+    footer {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 16px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--dim);
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--border); }
+    ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <header>
+    <span class="logo">LASER DETECTOR</span>
+    <div class="status-pill">
+      <div class="dot" id="dot"></div>
+      <span id="connLbl">CONNECTING</span>
+    </div>
+  </header>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+
+    <div class="alert-box" id="alertBox">
+      <div class="big-label" id="bigLabel">--</div>
+
+      <div class="centre">
+        <div class="direction-text" id="dirText">NO SIGNAL</div>
+        <div class="compass">
+          <div class="compass-pt front" id="cpFront">FWD</div>
+          <div class="compass-pt left"  id="cpLeft">L</div>
+          <div class="compass-pt centre">&#9711;</div>
+          <div class="compass-pt right" id="cpRight">R</div>
+          <div class="compass-pt rear"  id="cpRear">RR</div>
+        </div>
+      </div>
+
+      <div class="speed-block">
+        <div class="speed-num" id="speedNum">0</div>
+        <div class="speed-unit">km/h</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">PULSE RATE</div>
+        <div><span class="stat-value" id="statPrf">--</span><span class="stat-unit">Hz</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">PULSE COUNT</div>
+        <div><span class="stat-value" id="statPulses">--</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">DIRECTION</div>
+        <div><span class="stat-value" id="statDir">--</span></div>
+      </div>
+    </div>
+
+    <div class="log-panel">
+      <div class="log-heading">ALERT LOG</div>
+      <ul class="log-list" id="logList">
+        <li><span class="lt">--:--:--</span><span class="ls">--</span><span class="li">Waiting...</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>
+    <span id="footerTs">--</span>
+    <span>LASER DETECTOR v1.0</span>
+    <span id="footerGps">GPS: --</span>
+  </footer>
+
+</div>
+
+<script>
+  const WS_URL = `ws://${location.host}/ws`;
+  let ws, reconnTimer;
+  let wasAlert = false;
+
+  function connect() {
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => {
+      document.getElementById('dot').classList.add('live');
+      document.getElementById('connLbl').textContent = 'LIVE';
+    };
+    ws.onclose = () => {
+      document.getElementById('dot').classList.remove('live');
+      document.getElementById('connLbl').textContent = 'RECONNECTING';
+      clearTimeout(reconnTimer);
+      reconnTimer = setTimeout(connect, 2000);
+    };
+    ws.onerror = () => ws.close();
+    ws.onmessage = evt => {
+      try { handle(JSON.parse(evt.data)); } catch(e) {}
+    };
+  }
+  connect();
+
+  const ids = {
+    alertBox:  document.getElementById('alertBox'),
+    bigLabel:  document.getElementById('bigLabel'),
+    dirText:   document.getElementById('dirText'),
+    speedNum:  document.getElementById('speedNum'),
+    statPrf:   document.getElementById('statPrf'),
+    statPulses:document.getElementById('statPulses'),
+    statDir:   document.getElementById('statDir'),
+    cpFront:   document.getElementById('cpFront'),
+    cpRear:    document.getElementById('cpRear'),
+    cpLeft:    document.getElementById('cpLeft'),
+    cpRight:   document.getElementById('cpRight'),
+    footerTs:  document.getElementById('footerTs'),
+    logList:   document.getElementById('logList'),
+  };
+
+  function handle(d) {
+    ids.speedNum.textContent = Math.round(d.speed || 0);
+    ids.footerTs.textContent = new Date().toTimeString().split(' ')[0];
+
+    const alert = !!d.alert;
+    const side  = d.side || 'NONE';
+    const prf   = d.prf_ms > 0 ? Math.round(1000 / d.prf_ms) : 0;
+
+    ids.alertBox.classList.toggle('alerting', alert);
+    ids.bigLabel.classList.toggle('active', alert);
+    ids.dirText.classList.toggle('active', alert);
+
+    ids.bigLabel.textContent  = alert ? 'LASER' : '--';
+    ids.dirText.textContent   = alert ? side : 'NO SIGNAL';
+    ids.statPrf.textContent   = alert ? prf   : '--';
+    ids.statPulses.textContent= alert ? (d.pulses || '--') : '--';
+    ids.statDir.textContent   = alert ? side  : '--';
+
+    ['cpFront','cpRear','cpLeft','cpRight'].forEach(id => {
+      ids[id].classList.remove('lit');
+    });
+    if (alert) {
+      const map = { FRONT:'cpFront', REAR:'cpRear', LEFT:'cpLeft', RIGHT:'cpRight' };
+      if (map[side]) ids[map[side]].classList.add('lit');
+    }
+
+    if (alert && !wasAlert) {
+      const li = document.createElement('li');
+      const t  = new Date().toTimeString().split(' ')[0];
+      li.innerHTML = `<span class="lt">${t}</span><span class="ls">LASER</span><span class="li">${side}  ${prf}Hz  ${d.pulses}p</span>`;
+      ids.logList.prepend(li);
+      while (ids.logList.children.length > 50) ids.logList.removeChild(ids.logList.lastChild);
+    }
+    wasAlert = alert;
+  }
+</script>
+</body>
+</html>
