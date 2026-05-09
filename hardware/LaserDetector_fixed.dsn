@@ -50,13 +50,13 @@
     (component Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal::1
       (place R22 186730 -72310 front 0 (PN 100k))
       (place R25 142840 -118500 front 0 (PN 100))
-      (place R10 203230 -132730 front 0 (PN 100k))
+      (place R10 110000 -132000 front 0 (PN 100k))
       (place R29 140930 -130160 front 0 (PN 5.5k))
       (place R4 100605 -143230 front 0 (PN 100k))
       (place R24 200650 -53810 front 0 (PN 3.3k))
       (place R27 186730 -62310 front 0 (PN 10k))
       (place R21 186650 -67810 front 0 (PN 10k))
-      (place R15 122840 -104500 front 0 (PN 10k))
+      (place R15 110000 -128500 front 0 (PN 10k))
       (place R13 190230 -136230 front 0 (PN 10k))
       (place R8 100605 -136230 front 0 (PN 10k))
       (place R28 140850 -126160 front 0 (PN 5.5k))
@@ -70,7 +70,7 @@
     )
     (component Potentiometer_THT:Potentiometer_Bourns_3296W_Vertical::1
       (place R23 218350 -73805 front 0 (PN R_Trim))
-      (place R5 214850 -123225 front 0 (PN R_Trim))
+      (place R5 214850 -133500 front 0 (PN R_Trim))
       (place R17 94725 -131225 front 0 (PN R_Trim))
     )
     (component Buzzer_Beeper:Buzzer_12x9.5RM7.6
@@ -91,12 +91,12 @@
       (place D4 88605 -140230 front 0 (PN BPW34))
     )
     (component "Package_DIP:DIP-8_W7.62mm::1"
-      (place U5 197500 -119920 front 0 (PN LM393))
+      (place U5 203000 -128000 front 0 (PN LM393))
       (place U2 212690 -59230 front 0 (PN LM358))
       (place U3 201690 -59190 front 0 (PN LM393))
-      (place U4 186720 -119920 front 0 (PN LM358))
-      (place U9 93660 -116920 front 0 (PN LM393))
-      (place U8 82880 -116920 front 0 (PN LM358))
+      (place U4 192000 -128000 front 0 (PN LM358))
+      (place U9 93660 -126000 front 0 (PN LM393))
+      (place U8 82880 -126000 front 0 (PN LM358))
     )
     (component Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm::1
       (place C1 192310 -143230 front 0 (PN 100n))
